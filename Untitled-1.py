@@ -3,26 +3,30 @@ from tkinter import ttk, messagebox
 import json
 import os
 
-# File paths for data
-ACTIVITIES_FILE = "data/activities.json"
-EVENTS_FILE = "data/events.json"
-BUDGET_FILE = "data/budget.json"
+# Paths
+USERS_DIR = "users"
 
-# Ensure data files exist
-os.makedirs("data", exist_ok=True)
-for file in [ACTIVITIES_FILE, EVENTS_FILE, BUDGET_FILE]:
-    if not os.path.exists(file):
-        with open(file, "w") as f:
+
+# Ensure the users directory exists
+os.makedirs(USERS_DIR, exist_ok=True)
+
+def user_exists(username):
+    return os.path.exists(os.path.join(USERS_DIR, username))
+def create_user(username, password):
+    user_dir = os.path.join(USERS_DIR, username)
+    os.makedirs(user_dir, exist_ok=True)
+    with open(os.path.join(user_dir, "password.json"), "w") as file:
+        json.dump({"password": password}, file)
+    # Create empty data files for the user
+    for file in ["activities.json", "events.json", "budget.json"]:
+        with open(os.path.join(user_dir, file), "w") as f:
             json.dump([], f)
-
-# Utility functions to load/save data
-def load_data(file_path):
-    with open(file_path, "r") as file:
-        return json.load(file)
-
-def save_data(file_path, data):
-    with open(file_path, "w") as file:
-        json.dump(data, file)
+def authenticate_user(username, password):
+    if not user_exists(username):
+        return False
+    with open(os.path.join(USERS_DIR, username, "password.json"), "r") as file:
+        data = json.load(file)
+        return data.get("password") == password
 
 # Main Application Class
 class ActivityManagerApp:
@@ -30,9 +34,77 @@ class ActivityManagerApp:
         self.root = root
         self.root.title("Activity Manager")
         self.root.geometry("800x600")
+        self.current_user = None
 
-        # Tabs
-        self.tab_control = ttk.Notebook(root)
+        # Show the login screen initially
+        self.show_login_screen()
+
+    def show_login_screen(self):
+        for widget in self.root.winfo_children():
+            widget.destroy()
+
+        frame = tk.Frame(self.root)
+        frame.pack(pady=50)
+
+        tk.Label(frame, text="Login", font=("Arial", 18)).grid(row=0, column=0, columnspan=2, pady=10)
+
+        tk.Label(frame, text="Username:").grid(row=1, column=0, padx=5, pady=5)
+        self.login_username_entry = tk.Entry(frame)
+        self.login_username_entry.grid(row=1, column=1, padx=5, pady=5)
+
+        tk.Label(frame, text="Password:").grid(row=2, column=0, padx=5, pady=5)
+        self.login_password_entry = tk.Entry(frame, show="*")
+        self.login_password_entry.grid(row=2, column=1, padx=5, pady=5)
+
+        tk.Button(frame, text="Login", command=self.login).grid(row=3, column=0, pady=10)
+        tk.Button(frame, text="Sign Up", command=self.show_signup_screen).grid(row=3, column=1, pady=10)
+
+    def show_signup_screen(self):
+        for widget in self.root.winfo_children():
+            widget.destroy()
+
+        frame = tk.Frame(self.root)
+        frame.pack(pady=50)
+
+        tk.Label(frame, text="Sign Up", font=("Arial", 18)).grid(row=0, column=0, columnspan=2, pady=10)
+
+        tk.Label(frame, text="Username:").grid(row=1, column=0, padx=5, pady=5)
+        self.signup_username_entry = tk.Entry(frame)
+        self.signup_username_entry.grid(row=1, column=1, padx=5, pady=5)
+
+        tk.Label(frame, text="Password:").grid(row=2, column=0, padx=5, pady=5)
+        self.signup_password_entry = tk.Entry(frame, show="*")
+        self.signup_password_entry.grid(row=2, column=1, padx=5, pady=5)
+
+        tk.Button(frame, text="Sign Up", command=self.signup).grid(row=3, column=0, columnspan=2, pady=10)
+
+    def login(self):
+        username = self.login_username_entry.get()
+        password = self.login_password_entry.get()
+        if authenticate_user(username, password):
+            self.current_user = username
+            self.show_dashboard()
+        else:
+            messagebox.showerror("Login Failed", "Invalid username or password.")
+
+    def signup(self):
+        username = self.signup_username_entry.get()
+        password = self.signup_password_entry.get()
+        if not username or not password:
+            messagebox.showerror("Sign Up Failed", "Username and password cannot be empty.")
+            return
+        if user_exists(username):
+            messagebox.showerror("Sign Up Failed", "Username already exists.")
+            return
+        create_user(username, password)
+        messagebox.showinfo("Success", "Account created! Please log in.")
+        self.show_login_screen()
+
+    def show_dashboard(self):
+        for widget in self.root.winfo_children():
+            widget.destroy()
+
+        self.tab_control = ttk.Notebook(self.root)
         self.tab_dashboard = ttk.Frame(self.tab_control)
         self.tab_activities = ttk.Frame(self.tab_control)
         self.tab_events = ttk.Frame(self.tab_control)
@@ -44,20 +116,20 @@ class ActivityManagerApp:
         self.tab_control.add(self.tab_budget, text="Budget")
         self.tab_control.pack(expand=1, fill="both")
 
-        # Populate Tabs
         self.create_dashboard_tab()
         self.create_activities_tab()
         self.create_events_tab()
         self.create_budget_tab()
 
     def create_dashboard_tab(self):
-        label = tk.Label(self.tab_dashboard, text="Welcome to the Activity Manager Dashboard!", font=("Arial", 16))
+        label = tk.Label(self.tab_dashboard, text=f"Welcome, {self.current_user}!", font=("Arial", 16))
         label.pack(pady=20)
 
     def create_activities_tab(self):
-        self.activities = load_data(ACTIVITIES_FILE)
+        # Load user-specific activities
+        activities_file = os.path.join(USERS_DIR, self.current_user, "activities.json")
+        self.activities = load_data(activities_file)
 
-        # UI Components
         frame = tk.Frame(self.tab_activities)
         frame.pack(fill="both", expand=True, padx=10, pady=10)
 
@@ -83,7 +155,8 @@ class ActivityManagerApp:
         desc = self.activity_desc_entry.get()
         if name and desc:
             self.activities.append({"name": name, "description": desc})
-            save_data(ACTIVITIES_FILE, self.activities)
+            activities_file = os.path.join(USERS_DIR, self.current_user, "activities.json")
+            save_data(activities_file, self.activities)
             self.load_activities()
             self.activity_name_entry.delete(0, tk.END)
             self.activity_desc_entry.delete(0, tk.END)
