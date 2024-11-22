@@ -45,7 +45,6 @@ def authenticate_user(username, password):
         data = json.load(file)
         return data.get("password") == password
 
-# Main Application Class
 class ActivityManagerApp:
     def __init__(self, root):
         self.root = root
@@ -63,13 +62,13 @@ class ActivityManagerApp:
         frame = tk.Frame(self.root)
         frame.pack(pady=50)
 
-        tk.Label(frame, text="Login", font=("Arial", 18)).grid(row=0, column=0, columnspan=2, pady=10)
+        tk.Label(frame, text="Login", font=("Arial", 18), fg="maroon").grid(row=0, column=0, columnspan=2, pady=10)
 
-        tk.Label(frame, text="Username:").grid(row=1, column=0, padx=5, pady=5)
+        tk.Label(frame, text="Username:",fg="maroon").grid(row=1, column=0, padx=5, pady=5)
         self.login_username_entry = tk.Entry(frame)
         self.login_username_entry.grid(row=1, column=1, padx=5, pady=5)
 
-        tk.Label(frame, text="Password:").grid(row=2, column=0, padx=5, pady=5)
+        tk.Label(frame, text="Password:",fg="maroon").grid(row=2, column=0, padx=5, pady=5)
         self.login_password_entry = tk.Entry(frame, show="*")
         self.login_password_entry.grid(row=2, column=1, padx=5, pady=5)
 
@@ -83,13 +82,13 @@ class ActivityManagerApp:
         frame = tk.Frame(self.root)
         frame.pack(pady=50)
 
-        tk.Label(frame, text="Sign Up", font=("Arial", 18)).grid(row=0, column=0, columnspan=2, pady=10)
+        tk.Label(frame, text="Sign Up", font=("Arial", 18), fg="maroon").grid(row=0, column=0, columnspan=2, pady=10)
 
-        tk.Label(frame, text="Username:").grid(row=1, column=0, padx=5, pady=5)
+        tk.Label(frame, text="Username:", fg="maroon").grid(row=1, column=0, padx=5, pady=5)
         self.signup_username_entry = tk.Entry(frame)
         self.signup_username_entry.grid(row=1, column=1, padx=5, pady=5)
 
-        tk.Label(frame, text="Password:").grid(row=2, column=0, padx=5, pady=5)
+        tk.Label(frame, text="Password:", fg="maroon").grid(row=2, column=0, padx=5, pady=5)
         self.signup_password_entry = tk.Entry(frame, show="*")
         self.signup_password_entry.grid(row=2, column=1, padx=5, pady=5)
 
@@ -160,6 +159,7 @@ class ActivityManagerApp:
         tk.Label(frame, text="Description:").grid(row=1, column=0, padx=5, pady=5)
         self.activity_desc_entry = tk.Entry(frame)
         self.activity_desc_entry.grid(row=1, column=1, padx=5, pady=5)
+        
 
         tk.Button(frame, text="Add Activity", command=self.add_activity).grid(row=2, column=1, pady=10)
 
@@ -195,7 +195,7 @@ class ActivityManagerApp:
 
 
     def create_events_tab(self):
-        tk.Label(self.tab_events, text="Events Management (Still more to come!)", font=("Arial", 14)).pack(pady=20)
+        tk.Label(self.tab_events, text="Events Management (Still more to come!)",fg="maroon" ,font=("Arial", 14)).pack(pady=20)
 
                 # Calendar graphic
         today = datetime.today()
@@ -210,19 +210,16 @@ class ActivityManagerApp:
     def create_calendar(self, parent, year, month):
         # Display the current month name above the calendar
         month_name = calendar.month_name[month]  # Get the full name of the month
-        tk.Label(parent, text=f"{month_name} {year}", font=("Arial", 14, "bold")).grid(row=0, column=0, columnspan=7, pady=10)
+        tk.Label(parent, text=f"{month_name} {year}", font=("Arial", 14, "bold"),fg="maroon").grid(row=0, column=0, columnspan=7, pady=10)
 
-        # Generate calendar for the given month and year with Sunday as the first day
         cal = calendar.Calendar(firstweekday=6)
         month_days = cal.monthdayscalendar(year, month)
 
-        # Header for days of the week
         days_header = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
         for col, day in enumerate(days_header):
-            header = tk.Label(parent, text=day, font=("Arial", 12, "bold"), width=10, anchor="center")
+            header = tk.Label(parent, text=day, font=("Arial", 12, "bold"), width=10, anchor="center",fg="maroon" )
             header.grid(row=1, column=col, padx=5, pady=5)
 
-        # Display the days in the calendar
         for row, week in enumerate(month_days, start=2):  # Start at row 2 because row 0 and 1 are used for headers
             for col, day in enumerate(week):
                 if day == 0:  # Empty day slots
