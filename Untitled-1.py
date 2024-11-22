@@ -3,12 +3,28 @@ from tkinter import ttk, messagebox
 import json
 import os
 
+def load_data(file_path):
+    """Load data from a JSON file. Create an empty file if it does not exist."""
+    try:
+        with open(file_path, "r") as file:
+            return json.load(file)
+    except FileNotFoundError:
+        # If the file doesn't exist, create it and return an empty list
+        with open(file_path, "w") as file:
+            json.dump([], file)
+        return []
+def save_data(file_path, data):
+    """Save data to a JSON file."""
+    with open(file_path, "w") as file:
+        json.dump(data, file, indent=4)
+
 # Paths
 USERS_DIR = "users"
 
 
 # Ensure the users directory exists
 os.makedirs(USERS_DIR, exist_ok=True)
+
 
 def user_exists(username):
     return os.path.exists(os.path.join(USERS_DIR, username))
@@ -126,8 +142,11 @@ class ActivityManagerApp:
         label.pack(pady=20)
 
     def create_activities_tab(self):
-        # Load user-specific activities
+        # Construct the file path for the current user's activities
         activities_file = os.path.join(USERS_DIR, self.current_user, "activities.json")
+        print(f"Loading activities from: {activities_file}")  # Debugging line
+
+    # Load user-specific activities
         self.activities = load_data(activities_file)
 
         frame = tk.Frame(self.tab_activities)
@@ -148,7 +167,10 @@ class ActivityManagerApp:
         self.activity_list.heading("Name", text="Name")
         self.activity_list.heading("Description", text="Description")
         self.activity_list.grid(row=3, column=0, columnspan=2, pady=10)
+
+        # Populate the list with loaded activities
         self.load_activities()
+
 
     def add_activity(self):
         name = self.activity_name_entry.get()
@@ -169,6 +191,7 @@ class ActivityManagerApp:
             self.activity_list.delete(row)
         for activity in self.activities:
             self.activity_list.insert("", tk.END, values=(activity["name"], activity["description"]))
+
 
     def create_events_tab(self):
         tk.Label(self.tab_events, text="Events Management (Under Development)", font=("Arial", 14)).pack(pady=20)
