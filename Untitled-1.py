@@ -2,7 +2,8 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 import json
 import os
-
+import calendar
+from datetime import datetime
 def load_data(file_path):
     """Load data from a JSON file. Create an empty file if it does not exist."""
     try:
@@ -194,10 +195,45 @@ class ActivityManagerApp:
 
 
     def create_events_tab(self):
-        tk.Label(self.tab_events, text="Events Management (Under Development)", font=("Arial", 14)).pack(pady=20)
+        tk.Label(self.tab_events, text="Events Management (Still more to come!)", font=("Arial", 14)).pack(pady=20)
+
+                # Calendar graphic
+        today = datetime.today()
+        month = today.month
+        year = today.year
+
+        # Create and display the calendar
+        cal_frame = tk.Frame(self.tab_events)
+        cal_frame.pack(pady=20)
+        self.create_calendar(cal_frame, year, month)
+
+    def create_calendar(self, parent, year, month):
+        # Display the current month name above the calendar
+        month_name = calendar.month_name[month]  # Get the full name of the month
+        tk.Label(parent, text=f"{month_name} {year}", font=("Arial", 14, "bold")).grid(row=0, column=0, columnspan=7, pady=10)
+
+        # Generate calendar for the given month and year with Sunday as the first day
+        cal = calendar.Calendar(firstweekday=6)
+        month_days = cal.monthdayscalendar(year, month)
+
+        # Header for days of the week
+        days_header = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+        for col, day in enumerate(days_header):
+            header = tk.Label(parent, text=day, font=("Arial", 12, "bold"), width=10, anchor="center")
+            header.grid(row=1, column=col, padx=5, pady=5)
+
+        # Display the days in the calendar
+        for row, week in enumerate(month_days, start=2):  # Start at row 2 because row 0 and 1 are used for headers
+            for col, day in enumerate(week):
+                if day == 0:  # Empty day slots
+                    cell = tk.Label(parent, text="", font=("Arial", 10), width=10, height=2, bg="lightgray")
+                else:
+                    cell = tk.Label(parent, text=str(day), font=("Arial", 10), width=10, height=2, bg="white")
+                cell.grid(row=row, column=col, padx=5, pady=5)
+
 
     def create_budget_tab(self):
-        tk.Label(self.tab_budget, text="Budget Tracker (Under Development)", font=("Arial", 14)).pack(pady=20)
+        tk.Label(self.tab_budget, text="Budget Tracker (Still working on it!)", font=("Arial", 14)).pack(pady=20)
 
 # Run the application
 if __name__ == "__main__":
